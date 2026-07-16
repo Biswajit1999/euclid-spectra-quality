@@ -1,6 +1,6 @@
 # Local Completion Report — Euclid NISP Spectral-Contamination Reliability Audit
 
-Author: Biswajit Jana. This report documents a local Claude Code implementation pass (BUILD_FIRST
+Author: Biswajit Jana. This report documents a local implementation pass (BUILD_FIRST
 priority 9.4/10). No git operations were performed. Nothing has been published.
 
 ## 1. Environment
