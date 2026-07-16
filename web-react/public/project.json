@@ -1,0 +1,46 @@
+{
+  "title": "Euclid NISP Spectral-Contamination Reliability Audit",
+  "repo": "euclid-spectra-quality",
+  "category": "Slitless spectroscopy instrumentation / data science",
+  "status": "BUILD_FIRST",
+  "priority": 9.4,
+  "question": "How do released contamination indicators relate to continuum S/N, emission-line recovery and redshift reliability in selected NISP spectra?",
+  "gap": "An external audit; not a decontamination, extraction or redshift pipeline.",
+  "dataMode": "real public Euclid Q1 NISP products",
+  "novelty": "An external audit of released Euclid Q1 NISP contamination indicators against continuum S/N, line recovery and redshift reliability; not a decontamination, extraction or redshift pipeline, and no causal claim is made from these descriptive catalogue correlations.",
+  "figures": [
+    { "id": "low_high_contamination_spectra", "label": "Low/high contamination spectra" },
+    { "id": "snr_vs_contamination", "label": "Continuum S/N vs contamination group" },
+    { "id": "redshift_error", "label": "Redshift error by contamination group" },
+    { "id": "outlier_fraction", "label": "Redshift-reliability outlier fraction" },
+    { "id": "line_recovery", "label": "Line recovery vs S/N threshold" },
+    { "id": "field_map", "label": "Field map by contamination group" }
+  ],
+  "validationContract": [
+    "line injection into real continua",
+    "bootstrap contamination groups",
+    "redshift outlier fraction",
+    "threshold sensitivity",
+    "permuted-label negative control"
+  ],
+  "methodology": "Euclid Q1 NISP spectroscopy products are queried live from IRSA's public Euclid Q1 TAP mirror (astroquery.ipac.irsa.Irsa), joining the SPE quality-flag table, the SPE galaxy redshift-candidate table and the MER positional catalogue on object_id, restricted to a single Q1 tile to keep queries fast and deterministic. The released spe_context_warning_flag / spe_context_error_flag columns are used as the operational contamination indicator (documented assumption: the SIR processing paper states the pipeline subtracts cross- and self-contamination, and these are the only released per-object flags plausibly tied to that step; their exact bit semantics are not published). Objects are split into clean/flagged groups and compared on: continuum S/N (spe_cont_snr, bootstrap CI), line-recovery rate (fraction with best Gaussian-fit line S/N spe_line_snr_gf above a threshold, swept across thresholds), and redshift reliability (spe_z_rel, spe_z_err). A synthetic-continuum line-injection/recovery gate (Gaussian line injected into a real or synthetic continuum, recovered via a matched Gaussian fit) validates the line-measurement machinery before any real-data conclusion is drawn. A permuted-label negative control and a 3-way threshold-sensitivity check (varying which flags count as 'contaminated') are run alongside the headline result.",
+  "assumptions": [
+    "The released spe_context_warning_flag / spe_context_error_flag columns are used as the contamination indicator; their precise bit dictionary is not published in the queryable IRSA TAP column metadata, so this mapping is a documented, named assumption rather than an internal Euclid Consortium definition.",
+    "Archive metadata and calibration versions (Q1 SIR/PHZ processing) are recorded and interpreted as released, without independent recalibration.",
+    "Selection is deterministic: a single Q1 tile, ORDER BY object_id, TOP-N sampling, with no manual row-level curation.",
+    "Uncertainty is reported via bootstrap resampling (continuum S/N, outlier fraction) or fit-covariance convergence diagnostics (line injection), never conflated with each other."
+  ],
+  "limitations": [
+    "An external audit of released catalogue products; not a decontamination, extraction or redshift pipeline, and not a replacement for the official Euclid SIR/PHZ processing.",
+    "Real-data result is a documented null finding, not a group comparison: on tile 102160061 (RGS grism), every released SPE quality flag examined (spe_context_warning_flag, spe_context_error_flag, spe_error_flag) is constant across all 6000 objects with a rank-0 galaxy redshift candidate, so no clean/flagged split, threshold-sensitivity check or negative control could be computed against real data in this release. This is reported transparently (see results/warnings.json) rather than substituted with a synthetic or partial split; the synthetic validation gate with a known injected effect still fully passes all 5 required checks.",
+    "Results apply only to the selected Q1 tile, RGS grism, and object selection documented in data/manifest.csv; they are not a survey-wide statement.",
+    "Real Q1 NISP spectroscopic redshifts have no independent ground truth available in this bounded release, so the real-data 'redshift reliability' metric uses the released spe_z_rel score and spe_z_err, not a truth-based catastrophic-failure outlier fraction (that stronger test is only possible on the synthetic validation gate, where a true redshift is known by construction).",
+    "Only 23 of 40 attempted real spectrum downloads succeeded (remainder skipped on transient IRSA 502 errors, recorded as warnings in data/manifest.csv provenance, not silently dropped).",
+    "Correlated errors, calibration systematics across detectors/tiles, and selection effects in which objects even receive a context flag are not modelled."
+  ],
+  "citation": {
+    "author": "Biswajit Jana",
+    "license": "BSD-3-Clause (original code); mission/archive products retain their original terms",
+    "repository": "https://github.com/Biswajit1999/euclid-spectra-quality"
+  }
+}

@@ -1,0 +1,60 @@
+% Verified via WebFetch against arXiv abstract pages on 2026-07-14 (see IMPLEMENTATION_PLAN.md Sec 1).
+
+@article{euclidq1_overview_2025,
+  author       = {{Euclid Collaboration} and Aussel, H. and others},
+  title        = {Euclid Quick Data Release (Q1) -- Data release overview},
+  year         = {2025},
+  eprint       = {2503.15302},
+  archivePrefix = {arXiv},
+  primaryClass = {astro-ph.GA},
+  note         = {Verified via arXiv abstract page, 2026-07-14}
+}
+
+@article{euclidq1_sir_2025,
+  author       = {{Euclid Collaboration} and Copin, Y. and others},
+  title        = {Euclid Quick Data Release (Q1): From spectrograms to spectra: the SIR spectroscopic Processing Function},
+  year         = {2025},
+  eprint       = {2503.15307},
+  archivePrefix = {arXiv},
+  primaryClass = {astro-ph.IM},
+  note         = {Verified via arXiv abstract page, 2026-07-14; abstract explicitly states the pipeline
+                  "subtracts cross-contaminations, minimizes self-contamination" during 1-D spectral
+                  extraction, which is the basis for this project's use of the released spe\_context\_*
+                  flags as a contamination proxy (see docs/ASSUMPTIONS\_AND\_LIMITATIONS.md).}
+}
+
+@article{euclidq1_nir_2025,
+  author       = {{Euclid Collaboration} and Polenta, G. and others},
+  title        = {Euclid Quick Data Release (Q1). NIR processing and data products},
+  year         = {2025},
+  eprint       = {2503.15304},
+  archivePrefix = {arXiv},
+  primaryClass = {astro-ph.IM},
+  note         = {Verified via arXiv abstract page, 2026-07-14}
+}
+
+@misc{euclidq1_spectro_science_seed,
+  author = {{Euclid Collaboration}},
+  title  = {Euclid Q1 spectroscopy science papers (generic literature seed, not a single citable work)},
+  year   = {2025},
+  note   = {TODO\_VERIFY: docs/LITERATURE\_SEEDS.md lists this as a generic pointer, not a specific
+            paper; no single title/DOI/arXiv ID could be verified for it. Retained as a documented
+            gap rather than invented. See IMPLEMENTATION\_PLAN.md Sec 1.}
+}
+
+@manual{astropy2022,
+  author = {{Astropy Collaboration}},
+  title  = {Astropy: A community Python package for astronomy},
+  year   = {2022},
+  note   = {astropy.org; version 6.1.0 pinned in this project's pyproject.toml}
+}
+
+@manual{specutils,
+  author = {{Astropy Project / specutils contributors}},
+  title  = {specutils: An Astropy Package for Spectroscopy},
+  year   = {2024},
+  note   = {specutils.readthedocs.io; version 1.20.3 pinned in this project's pyproject.toml
+            (specutils itself is a pinned dependency; this project's spectral I/O and continuum/line
+            code is hand-implemented against the released VOTable schema rather than specutils'
+            Spectrum1D API, documented in docs/ASSUMPTIONS\_AND\_LIMITATIONS.md)}
+}

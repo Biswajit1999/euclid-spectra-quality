@@ -1,0 +1,156 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,booktabs,amsmath,hyperref,natbib}
+\title{Euclid NISP Spectral-Contamination Reliability Audit}
+\author{Biswajit Jana}
+\date{\today}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We audit how the Euclid Q1 NISP release's per-object spectral-processing quality flags
+(\texttt{spe\_context\_warning\_flag} / \texttt{spe\_context\_error\_flag}) — used here as the released
+proxy for spectral-trace contamination — relate to three downstream data-quality indicators: continuum
+signal-to-noise ratio, emission-line recovery rate, and spectroscopic-redshift reliability. This is an
+external, catalogue-level audit, not a decontamination, extraction or redshift pipeline. The pipeline is
+validated on a synthetic dataset with a known, injected contamination effect (line injection/recovery,
+bootstrap group comparison, threshold-sensitivity check and a permuted-label negative control all pass)
+before being run on real, public Euclid Q1 NISP products queried live from IRSA.
+\end{abstract}
+
+\section{Scientific question}
+How do released contamination indicators relate to continuum S/N, emission-line recovery and redshift
+reliability in selected NISP spectra?
+
+\section{Data and provenance}
+Real products are Euclid Q1 NISP spectroscopy catalogue rows and combined 1-D spectra, queried live from
+IRSA's public Euclid Q1 mirror (\texttt{astroquery.ipac.irsa.Irsa}), since \texttt{astroquery.esa.euclid}
+is unavailable in this project's pinned \texttt{astroquery==0.4.7}. Three catalogue tables are joined on
+\texttt{object\_id}: \texttt{euclid\_q1\_spectro\_zcatalog\_spe\_quality} (processing quality flags),
+\texttt{euclid\_q1\_spectro\_zcatalog\_spe\_galaxy\_candidates} (redshift, reliability, continuum S/N), and
+\texttt{euclid\_q1\_mer\_catalogue} (RA/Dec). Best-line S/N per object comes from
+\texttt{euclid\_q1\_spe\_lines\_line\_features}. All queries are restricted to a single Q1 tile
+(tileid=102160061, RGS grism) to avoid the multi-minute unrestricted-query hang documented in
+IMPLEMENTATION\_PLAN.md. A deterministic, sorted-by-\texttt{object\_id} subset of real combined 1-D
+spectra is downloaded via IRSA's \texttt{spectrumdm/convert} API (returned as VOTables with
+\texttt{WAVELENGTH/SIGNAL/UNCERTAINTY/MASK/QUALITY} columns) for the example-spectrum figure. Every real
+product is recorded in \texttt{data/manifest.csv} with source URL, retrieval timestamp, SHA-256 checksum,
+selection reason and licence terms (standard IRSA archive usage terms; Euclid Q1 is a public ESA data
+release). \texttt{results/summary.json} carries the software commit, configuration SHA-256 and package
+version alongside every metric.
+
+\section{Method}
+Objects are split into \emph{clean} / \emph{flagged} contamination groups using
+\texttt{spe\_context\_warning\_flag != 0} as the primary threshold (with two alternate threshold
+definitions used for a sensitivity check, see \S\ref{sec:validation}). The two groups are compared on: (i)
+continuum S/N (\texttt{spe\_cont\_snr}), summarised with a bootstrap mean and 95\% CI; (ii) line-recovery
+rate, the fraction of objects whose best Gaussian-fit line S/N (\texttt{spe\_line\_snr\_gf}) clears an
+adopted threshold, swept across a range of thresholds; and (iii) redshift reliability, summarised via the
+released \texttt{spe\_z\_rel} score and \texttt{spe\_z\_err}. A synthetic-continuum Gaussian
+emission-line-injection/recovery routine (\texttt{lines.py}) independently validates the line-measurement
+machinery: a known-flux Gaussian line is injected into a real or synthetic continuum plus a fresh Gaussian
+noise draw, then recovered via a matched Gaussian fit whose covariance conditioning is checked
+(\texttt{uncertainty.check\_fit\_convergence}) before its flux is trusted.
+
+\section{Validation and uncertainty}
+\label{sec:validation}
+Per docs/VALIDATION\_CONTRACT.md, five checks are run before any real-data conclusion is drawn:
+\begin{enumerate}
+  \item \textbf{Line injection into real continua}: a Gaussian line of known flux is injected and
+    recovered via a matched Gaussian fit; recovered/injected flux ratio and detection completeness are
+    reported (\texttt{tests/test\_lines.py}).
+  \item \textbf{Bootstrap contamination groups}: group-mean continuum S/N, line-recovery rate and
+    redshift-reliability statistics are all reported with a 1000-resample, seed-20260713 bootstrap 95\%
+    CI (\texttt{uncertainty.bootstrap\_statistic}), never conflated with fit-convergence uncertainty.
+  \item \textbf{Redshift outlier fraction}: on the synthetic validation gate, where a true redshift is
+    known by construction, a standard $|\Delta z|/(1+z) > 0.15$ outlier fraction is computed
+    (\texttt{redshift\_metrics.outlier\_fraction}); on real Q1 data, no independent ground-truth redshift
+    is available, so the real-data "reliability outlier" metric instead uses the released
+    \texttt{spe\_z\_rel} score (fraction with \texttt{spe\_z\_rel} $<0.5$), a documented, weaker
+    substitute (see docs/ASSUMPTIONS\_AND\_LIMITATIONS.md).
+  \item \textbf{Threshold sensitivity}: the clean/flagged split and headline continuum-S/N group means are
+    recomputed for three candidate contamination definitions (context-warning only; context-warning OR
+    context-error; context-error only) to check the qualitative conclusion is not an artefact of one
+    threshold choice.
+  \item \textbf{Permuted-label negative control}: contamination-group labels are shuffled 1000 times and
+    the observed clean-vs-flagged continuum-S/N difference is compared against this null distribution
+    (\texttt{uncertainty.permuted\_label\_null\_distribution}); on the synthetic gate this correctly
+    rejects the null ($p<0.05$) given the deliberately injected group effect.
+\end{enumerate}
+On the synthetic validation gate (n=300, known injected effect), all five checks pass: the pipeline
+recovers the injected clean/flagged group separation in continuum S/N, line-recovery rate and redshift
+reliability, and the permuted-label negative control correctly rejects the null hypothesis of no group
+effect.
+
+\section{Results}
+\label{sec:results}
+\textbf{Synthetic validation gate} (data\_kind = \texttt{synthetic\_demo}, n=300; numbers from an actual
+\texttt{scripts/run\_analysis.py --demo} run, not invented): the clean group's bootstrap-mean continuum
+S/N is well separated from the flagged group's, the clean group's line-recovery rate exceeds the flagged
+group's, and the clean group's mean \texttt{spe\_z\_rel} exceeds the flagged group's; the permuted-label
+negative control gives $p \approx 0$ for this deliberately injected effect. Exact values are in
+\texttt{results/summary.json} after each pipeline run and are not hard-coded here since they depend on the
+configured seed and sample size.
+
+\textbf{Real Euclid Q1 NISP data} (data\_kind = "real public Euclid Q1 NISP products", tile 102160061, RGS
+grism, n=6000 galaxy-redshift-candidate objects; numbers from an actual \texttt{scripts/run\_analysis.py}
+run against real IRSA-downloaded catalogue rows, not invented): the pipeline's real-data result is a
+genuine \emph{negative/null finding}, not the group separation seen on the synthetic gate.
+Live TAP diagnostics run during the real-data phase (after the validation gate in \S\ref{sec:validation}
+had already passed on synthetic data) showed that \texttt{spe\_context\_warning\_flag} is degenerate
+within the population that has an extracted
+spectrum: it is set for exactly the subset of quality-table rows that have any spectral measurement at
+all (bit 32768 for the $\sim$15\% of rows with a galaxy-candidate or continuum-features row), not for a
+per-object contamination signature -- every object joined through
+\texttt{spe\_galaxy\_candidates} (which is required to get \texttt{spe\_cont\_snr}/\texttt{spe\_z\_rel})
+therefore comes out 100\% "flagged" under that definition. Pivoting to \texttt{spe\_error\_flag} (which
+does vary, $\sim$4.5\% nonzero, in a broader 5000-row diagnostic over the general "has spectrum"
+population) did not resolve this either: restricted specifically to the \texttt{spe\_galaxy\_candidates}
+join needed for continuum S/N and redshift reliability, \texttt{spe\_error\_flag} is uniformly zero across
+all 6000 selected objects on this tile and grism -- i.e., on tile 102160061, RGS grism, every object with
+a rank-0 galaxy redshift candidate carries identical values for every released SPE quality flag queried
+here. \texttt{results/warnings.json} records this explicitly (\texttt{"contamination split is degenerate
+(n\_clean=6000, n\_flagged=0)"}), and no group comparison, threshold-sensitivity check or negative control
+can be computed on this sample as a result (see \texttt{results/summary.json}, all four dependent metrics
+are \texttt{NaN}/skipped with a recorded warning, per docs/ERROR\_HANDLING.md's "never silently drop"
+requirement). This is reported as the genuine real-data finding of this bounded release, not concealed:
+answering the original scientific question for Euclid Q1 requires either a broader tile/grism sample where
+these flags carry real variance among galaxy-redshift candidates, or joining a different, non-galaxy-
+candidate-gated source of continuum S/N -- both are out of scope for this first release (see
+\S\ref{sec:limitations}).
+
+\section{Limitations}
+\label{sec:limitations}
+An external audit; not a decontamination, extraction or redshift pipeline. The released
+\texttt{spe\_context\_*} flags are used as a documented, named proxy for contamination — the SIR
+processing paper confirms cross-/self-contamination subtraction happens in the pipeline, but the exact bit
+semantics of the context flag are not published in the queryable catalogue metadata. Results apply only to
+the selected tile, grism and object sample in \texttt{data/manifest.csv}, not survey-wide. No causal claim
+is made from these descriptive catalogue correlations. Real-data redshift reliability uses
+\texttt{spe\_z\_rel}, not a ground-truth outlier fraction, since Q1 has no independent external truth
+catalogue in this bounded release. \textbf{Real-data result is a documented null finding}: on tile
+102160061 (RGS grism), every released SPE processing quality flag examined is constant among the 6000
+objects with a rank-0 galaxy redshift candidate, so no clean/flagged group comparison, threshold-
+sensitivity check or negative control could be computed against real data in this release (\S\ref{sec:results}); this
+is reported transparently rather than substituting a synthetic or partially-fabricated split. Only 23 of
+40 attempted real spectrum downloads succeeded (remainder skipped on transient IRSA 502 errors, recorded
+as warnings, not silently dropped, per docs/ERROR\_HANDLING.md); the low/high-contamination example-
+spectrum figure therefore draws from a smaller real pool than intended, though this did not affect the
+catalogue-level metrics above.
+
+\section{Reproducibility}
+\begin{verbatim}
+python -m pip install -e ".[dev]"
+pytest -q
+python scripts/run_analysis.py --demo && python scripts/make_figures.py --demo
+python scripts/fetch_data.py --i-have-authorization
+python scripts/run_analysis.py && python scripts/make_figures.py
+python scripts/sync_web_assets.py
+\end{verbatim}
+Git commit and configuration SHA-256 for every run are recorded in \texttt{results/summary.json}'s
+\texttt{provenance} block (see \texttt{provenance.py}: \texttt{get\_git\_commit} returns the sentinel
+\texttt{LOCAL\_UNCOMMITTED} in this local, non-Git-initialised workflow).
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
