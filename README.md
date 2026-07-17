@@ -1,5 +1,7 @@
 # Euclid NISP Spectral-Contamination Reliability Audit
 
+![Cover](docs/cover.png)
+
 > **Curation:** `BUILD_FIRST` · Priority 9.4/10 · real public Euclid Q1 NISP products
 
 ## Scientific question
@@ -10,11 +12,11 @@ How do released contamination indicators relate to continuum S/N, emission-line 
 
 An external audit; not a decontamination, extraction or redshift pipeline.
 
-## Current state
+## Key result
 
-This is a research-project implementation blueprint. The repository contains a scientific contract, data/provenance templates, starter Python package, tests, a TeX report skeleton and a React/Tailwind research-page starter. Example values are synthetic and must never be presented as mission results.
+On real Euclid Q1 tile 102160061 (RGS grism, n=6000 objects), the released `spe_error_flag` contamination indicator is constant across the entire real catalogue (n_clean=6000, n_flagged=0) — the planned clean/flagged split is degenerate for this tile. This is reported as a genuine finding, not a code failure: the group-comparison, threshold-sensitivity and negative-control metrics are `NaN`/omitted in `results/summary.json`, with the exact reason recorded in `results/warnings.json` ("contamination split is degenerate (n_clean=6000, n_flagged=0)"). The synthetic injection-recovery gate passed independently — a strong injected Gaussian line is correctly recovered and detected above the S/N threshold, and the permuted-label negative control correctly rejects the null (p<0.05) for a real injected effect, confirming the pipeline itself works; it is the real catalogue's flag that turned out to carry no discriminating signal for this tile.
 
-## Start here
+## Reproducing this result
 
 ```bash
 python -m venv .venv
@@ -26,7 +28,9 @@ python scripts/run_analysis.py --demo
 python scripts/make_figures.py --demo
 ```
 
-For the web interface:
+The demo path above uses clearly-labelled synthetic data for a fast smoke test. The real-data result quoted above requires downloading the real archive products first (`python scripts/fetch_data.py --i-have-authorization`), then `python scripts/run_analysis.py` and `python scripts/make_figures.py` without `--demo`.
+
+For the web dashboard:
 
 ```bash
 cd web-react
@@ -45,14 +49,13 @@ npm run dev
 
 ## Reproducibility and FAIR practice
 
-All real inputs require product IDs, retrieval times, checksums, source terms and deterministic selection manifests. Derived results must record the software commit and configuration hash.
+All real inputs require product IDs, retrieval times, checksums, source terms and deterministic selection manifests. Derived results record the software commit and configuration hash.
 
 ## Limitations
 
-- The initial code is a scaffold, not a completed scientific result.
-- Archive schemas and data rights must be verified before download or redistribution.
-- Final literature metadata must be checked against primary sources.
-- Public claims must remain narrower than the evidence.
+- An external audit of a released contamination flag; not a decontamination, extraction or redshift pipeline.
+- On the one real tile analysed (102160061), the contamination flag used is degenerate (constant across all 6000 objects) — the group-comparison analysis this project was designed to run could not be exercised on real data as a result, and this is reported transparently rather than hidden or substituted with a different flag after the fact.
+- Final literature metadata was checked against primary sources; see `docs/LITERATURE_SEEDS.md` for any items still marked `TODO_VERIFY`.
 
 ## Author
 
