@@ -3,7 +3,7 @@
   "data_kind": "real public Euclid Q1 NISP products",
   "sample_size": 1,
   "units": "flux density vs Angstrom",
-  "git_commit": "LOCAL_UNCOMMITTED",
+  "git_commit": "2822eef",
   "config_sha256": "bf59b706207c1041b07194d90400d12dcd9e97e26cf513e18b0644262b6e5a11",
   "package_version": "0.1.0"
 }
