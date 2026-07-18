@@ -1,0 +1,114 @@
+{
+  "project": "Euclid NISP Spectral-Contamination Reliability Audit",
+  "data_kind": "real public Euclid Q1 NISP products",
+  "metrics": [
+    {
+      "name": "n_total",
+      "estimate": 6000.0,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "count",
+      "sample_size": 6000
+    },
+    {
+      "name": "n_clean",
+      "estimate": 6000.0,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "count",
+      "sample_size": 6000
+    },
+    {
+      "name": "n_flagged",
+      "estimate": 0.0,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "count",
+      "sample_size": 6000
+    },
+    {
+      "name": "continuum_snr_clean",
+      "estimate": 229.54741248162208,
+      "uncertainty_low": 211.85016561492185,
+      "uncertainty_high": 247.2530526105393,
+      "units": "dimensionless (S/N)",
+      "sample_size": 5655
+    },
+    {
+      "name": "line_recovery_rate_clean",
+      "estimate": 0.3973333333333333,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "fraction",
+      "sample_size": 6000
+    },
+    {
+      "name": "redshift_reliability_mean_clean",
+      "estimate": 0.6527357309738484,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "dimensionless (spe_z_rel)",
+      "sample_size": 6000
+    },
+    {
+      "name": "redshift_fraction_unreliable_clean",
+      "estimate": 0.36466666666666664,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "fraction",
+      "sample_size": 6000
+    },
+    {
+      "name": "threshold_sensitivity_context_warning_only_flagged_cont_snr",
+      "estimate": NaN,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "dimensionless (S/N)",
+      "sample_size": 0
+    },
+    {
+      "name": "threshold_sensitivity_context_warning_or_error_flagged_cont_snr",
+      "estimate": NaN,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "dimensionless (S/N)",
+      "sample_size": 0
+    },
+    {
+      "name": "threshold_sensitivity_context_error_only_strict_flagged_cont_snr",
+      "estimate": NaN,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "dimensionless (S/N)",
+      "sample_size": 0
+    },
+    {
+      "name": "negative_control_observed_minus_null_mean_diff",
+      "estimate": NaN,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "dimensionless (S/N)",
+      "sample_size": 6000
+    },
+    {
+      "name": "negative_control_p_value_two_sided",
+      "estimate": NaN,
+      "uncertainty_low": null,
+      "uncertainty_high": null,
+      "units": "probability",
+      "sample_size": 6000
+    }
+  ],
+  "provenance": {
+    "config_sha256": "bf59b706207c1041b07194d90400d12dcd9e97e26cf513e18b0644262b6e5a11",
+    "git_commit": "LOCAL_UNCOMMITTED",
+    "package_version": "0.1.0",
+    "n_sources": 6000
+  },
+  "warnings": [
+    "contamination split is degenerate (n_clean=6000, n_flagged=0); group comparisons below may be unreliable or empty",
+    "no finite continuum S/N values in group 'flagged'",
+    "line recovery rate skipped for group 'flagged': no finite best_line_snr values to compute a recovery rate",
+    "permuted-label negative control skipped: need at least 2 samples in each of 'flagged' and 'clean' for a permutation test"
+  ]
+}

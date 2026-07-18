@@ -1,0 +1,35 @@
+[
+  {
+    "label": "demo",
+    "wall_time_seconds": 0.299480699992273,
+    "peak_memory_mib": 0.2167530059814453,
+    "peak_memory_method": "tracemalloc (Python-level allocations, not full process RSS)",
+    "dataset_size": 300,
+    "python_version": "3.11.15 | packaged by Anaconda, Inc. | (main, Jun 11 2026, 15:12:53) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "package_version": "0.1.0"
+  },
+  {
+    "label": "real_data",
+    "wall_time_seconds": 0.08950440003536642,
+    "peak_memory_mib": 0.12006092071533203,
+    "peak_memory_method": "tracemalloc (Python-level allocations, not full process RSS)",
+    "dataset_size": 800,
+    "python_version": "3.11.15 | packaged by Anaconda, Inc. | (main, Jun 11 2026, 15:12:53) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "package_version": "0.1.0"
+  },
+  {
+    "label": "real_data",
+    "wall_time_seconds": 0.15100369998253882,
+    "peak_memory_mib": 0.7985563278198242,
+    "peak_memory_method": "tracemalloc (Python-level allocations, not full process RSS)",
+    "dataset_size": 6000,
+    "python_version": "3.11.15 | packaged by Anaconda, Inc. | (main, Jun 11 2026, 15:12:53) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "package_version": "0.1.0"
+  }
+]

@@ -1,0 +1,6 @@
+[
+  "contamination split is degenerate (n_clean=6000, n_flagged=0); group comparisons below may be unreliable or empty",
+  "no finite continuum S/N values in group 'flagged'",
+  "line recovery rate skipped for group 'flagged': no finite best_line_snr values to compute a recovery rate",
+  "permuted-label negative control skipped: need at least 2 samples in each of 'flagged' and 'clean' for a permutation test"
+]
