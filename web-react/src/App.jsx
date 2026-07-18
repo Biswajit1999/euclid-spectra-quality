@@ -1,59 +1,144 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
-  Database, ShieldCheck, AlertTriangle, BookOpen, FileText,
-  Download, GitCommit, Beaker, ListChecks,
+  AlertCircle,
+  AlertTriangle,
+  Aperture,
+  Beaker,
+  BookOpen,
+  ChevronDown,
+  Database,
+  Download,
+  FileText,
+  GitCommit,
+  Info,
+  ListChecks,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 
-const card = 'rounded-2xl border border-slate-800 bg-slate-950/70 p-5 shadow-2xl shadow-black/20';
-const pill = 'rounded-full border border-slate-700 px-4 py-2 text-sm';
+const SpectralHero = lazy(() => import('./SpectralHero.jsx'));
+
+const warningCategories = [
+  {
+    key: 'degenerate-split',
+    title: 'Degenerate comparison split',
+    description: 'The released flag values place every selected object in one cohort, so a two-group comparison is not defined.',
+    test: (warning) => warning.includes('split is degenerate'),
+    tone: 'caveat',
+  },
+  {
+    key: 'empty-flagged-data',
+    title: 'Flagged-cohort measurements unavailable',
+    description: 'Group-specific statistics were skipped because the flagged cohort contains no finite measurements.',
+    test: (warning) => warning.includes("group 'flagged'") || warning.includes("for group 'flagged'"),
+    tone: 'quality',
+  },
+  {
+    key: 'negative-control',
+    title: 'Negative control unavailable',
+    description: 'The permutation test requires at least two members in each cohort and was therefore not evaluated.',
+    test: (warning) => warning.includes('negative control skipped'),
+    tone: 'caveat',
+  },
+];
+
+function parseResultJson(text) {
+  const validJson = text.replace(/:\s*NaN(?=\s*[,}])/g, ': null');
+  return JSON.parse(validJson);
+}
 
 function useJson(path) {
   const [state, setState] = useState({ data: null, error: null, loading: true });
   useEffect(() => {
     let cancelled = false;
     fetch(path)
-      .then((r) => {
-        if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-        return r.json();
+      .then((response) => {
+        if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+        return response.text();
       })
-      .then((data) => { if (!cancelled) setState({ data, error: null, loading: false }); })
-      .catch((error) => { if (!cancelled) setState({ data: null, error, loading: false }); });
+      .then(parseResultJson)
+      .then((data) => {
+        if (!cancelled) setState({ data, error: null, loading: false });
+      })
+      .catch((error) => {
+        if (!cancelled) setState({ data: null, error, loading: false });
+      });
     return () => { cancelled = true; };
   }, [path]);
   return state;
 }
 
-function MetricCard({ metric }) {
-  const hasUncertainty = metric.uncertainty_low != null && metric.uncertainty_high != null;
-  return (
-    <article className={card}>
-      <p className="text-sm text-slate-400">{metric.name.replace(/_/g, ' ')}</p>
-      <p className="mt-2 text-2xl font-semibold">
-        {typeof metric.estimate === 'number' ? metric.estimate.toPrecision(4) : String(metric.estimate)}
-        <span className="ml-1 text-sm font-normal text-slate-400">{metric.units}</span>
-      </p>
-      {hasUncertainty && (
-        <p className="mt-1 text-xs text-slate-400">
-          95% CI [{metric.uncertainty_low.toPrecision(3)}, {metric.uncertainty_high.toPrecision(3)}]
-        </p>
-      )}
-      <p className="mt-1 text-xs text-slate-500">n = {metric.sample_size}</p>
-    </article>
-  );
+function useNearViewport() {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current || !('IntersectionObserver' in window)) {
+      setVisible(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '180px' },
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, visible];
 }
 
-function Section({ icon: Icon, title, children }) {
+function formatEstimate(estimate) {
+  if (typeof estimate === 'number' && Number.isFinite(estimate)) return estimate.toPrecision(4);
+  return 'Unavailable';
+}
+
+function Section({ icon: Icon, kicker, title, className = '', dark = false, children }) {
   return (
-    <article className={card}>
-      <div className="mb-4 flex items-center gap-2">
-        <Icon size={18} />
-        <h2 className="font-semibold">{title}</h2>
+    <article className={`${dark ? 'spectral-panel-dark' : 'spectral-panel'} ${className}`}>
+      <div className="mb-6 flex items-start gap-3">
+        <span className={`section-mark ${dark ? 'section-mark-dark' : ''}`}>
+          <Icon size={17} aria-hidden="true" />
+        </span>
+        <div>
+          {kicker && <p className="spectral-kicker">{kicker}</p>}
+          <h2 className={`font-display text-2xl leading-tight ${dark ? 'text-white' : 'text-plum-950'}`}>{title}</h2>
+        </div>
       </div>
       {children}
     </article>
   );
 }
 
+function MetricCard({ metric, index }) {
+  const hasUncertainty = metric.uncertainty_low != null && metric.uncertainty_high != null;
+  const available = typeof metric.estimate === 'number' && Number.isFinite(metric.estimate);
+  return (
+    <article className={`metric-tile ${available ? '' : 'metric-tile-muted'}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-mono text-[0.65rem] text-fuchsia-700">M{String(index + 1).padStart(2, '0')}</span>
+        <span className="rounded-full border border-plum-200 bg-white/70 px-2 py-1 font-mono text-[0.62rem] text-plum-500">n={metric.sample_size}</span>
+      </div>
+      <p className="mt-5 break-words text-[0.68rem] uppercase leading-relaxed tracking-[0.12em] text-plum-600">
+        {metric.name.replace(/_/g, ' ')}
+      </p>
+      <p className={`${available ? 'text-plum-950' : 'text-plum-400'} mt-3 font-display text-3xl leading-none`}>
+        {formatEstimate(metric.estimate)}
+      </p>
+      <p className="mt-2 text-xs text-fuchsia-800/70">{metric.units}</p>
+      {hasUncertainty && (
+        <p className="mt-3 font-mono text-[0.67rem] text-plum-500">
+          95% CI [{metric.uncertainty_low.toPrecision(3)}, {metric.uncertainty_high.toPrecision(3)}]
+        </p>
+      )}
+    </article>
+  );
+}
 
 function inverseNormalCDF(p) {
   if (p <= 0 || p >= 1) return NaN;
@@ -61,68 +146,187 @@ function inverseNormalCDF(p) {
   const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
   const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
   const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
-  const pLow = 0.02425, pHigh = 1 - pLow;
-  let q, r;
+  const pLow = 0.02425;
+  const pHigh = 1 - pLow;
+  let q;
+  let r;
   if (p < pLow) {
     q = Math.sqrt(-2 * Math.log(p));
-    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  } else if (p <= pHigh) {
-    q = p - 0.5; r = q * q;
-    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
-  } else {
-    q = Math.sqrt(-2 * Math.log(1 - p));
-    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+    return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
   }
+  if (p <= pHigh) {
+    q = p - 0.5;
+    r = q * q;
+    return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
+  }
+  q = Math.sqrt(-2 * Math.log(1 - p));
+  return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
 }
 
 function ConfidenceExplorer({ metrics }) {
-  const withCI = (metrics || []).filter((m) => m.uncertainty_low != null && m.uncertainty_high != null);
+  const withCI = (metrics || []).filter((metric) => (
+    typeof metric.estimate === 'number'
+    && Number.isFinite(metric.estimate)
+    && metric.uncertainty_low != null
+    && metric.uncertainty_high != null
+  ));
   const [selected, setSelected] = useState(null);
   const [confidence, setConfidence] = useState(95);
-  useEffect(() => { if (!selected && withCI.length > 0) setSelected(withCI[0].name); }, [withCI, selected]);
+
+  useEffect(() => {
+    if (!selected && withCI.length > 0) setSelected(withCI[0].name);
+  }, [selected, withCI]);
+
   if (withCI.length === 0) return null;
-  const metric = withCI.find((m) => m.name === selected) ?? withCI[0];
-  const z95 = 1.959963984540054;
+  const metric = withCI.find((item) => item.name === selected) ?? withCI[0];
   const halfWidth95 = (metric.uncertainty_high - metric.uncertainty_low) / 2;
-  const sigma = halfWidth95 / z95;
+  const sigma = halfWidth95 / 1.959963984540054;
   const zLevel = inverseNormalCDF(0.5 + confidence / 200);
-  const lo = metric.estimate - zLevel * sigma;
-  const hi = metric.estimate + zLevel * sigma;
+  const low = metric.estimate - zLevel * sigma;
+  const high = metric.estimate + zLevel * sigma;
+
   return (
-    <Section icon={Beaker} title="Confidence-level explorer">
-      <p className="mb-4 text-xs text-slate-500">
-        Recomputes an approximate confidence interval at any level from this metric's reported 95%
-        bootstrap interval, assuming a normal sampling distribution. This is a client-side
-        approximation for exploring sensitivity around the real result &mdash; it does not
-        re-run the bootstrap; the 95% CI shown in the metric cards above is the actual computed
-        result from <code>uncertainty.py</code>.
+    <Section icon={Beaker} kicker="Interactive lens" title="Confidence-level explorer" className="h-full">
+      <p className="text-sm leading-6 text-plum-700">
+        Approximate interval derived from the reported 95% bootstrap bounds under a normal sampling
+        distribution. The recorded 95% interval remains the computed result.
       </p>
       {withCI.length > 1 && (
         <select
-          className="mb-4 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200"
+          className="mt-5 w-full rounded-xl border border-plum-200 bg-white px-3 py-2 text-sm text-plum-900"
           value={metric.name}
-          onChange={(e) => setSelected(e.target.value)}
+          onChange={(event) => setSelected(event.target.value)}
         >
-          {withCI.map((m) => <option key={m.name} value={m.name}>{m.name.replace(/_/g, ' ')}</option>)}
+          {withCI.map((item) => <option key={item.name} value={item.name}>{item.name.replace(/_/g, ' ')}</option>)}
         </select>
       )}
-      <label className="flex items-center justify-between text-sm text-slate-300">
+      <label className="mt-6 flex items-center justify-between text-sm text-plum-700">
         <span>Confidence level</span>
-        <span className="font-mono">{confidence.toFixed(1)}%</span>
+        <span className="font-mono text-fuchsia-700">{confidence.toFixed(1)}%</span>
       </label>
       <input
-        type="range" min="50" max="99.9" step="0.1" value={confidence}
-        onChange={(e) => setConfidence(Number(e.target.value))}
-        className="mt-2 w-full accent-cyan-500"
+        type="range"
+        min="50"
+        max="99.9"
+        step="0.1"
+        value={confidence}
+        onChange={(event) => setConfidence(Number(event.target.value))}
+        className="mt-3 w-full accent-fuchsia-700"
       />
-      <p className="mt-4 text-2xl font-semibold">
-        [{lo.toPrecision(4)}, {hi.toPrecision(4)}]
-        <span className="ml-2 text-sm font-normal text-slate-400">{metric.units}</span>
-      </p>
-      <p className="mt-1 text-xs text-slate-500">
-        estimate {metric.estimate.toPrecision(4)}, n = {metric.sample_size}
-      </p>
+      <p className="mt-5 font-display text-3xl text-plum-950">[{low.toPrecision(4)}, {high.toPrecision(4)}]</p>
+      <p className="mt-2 text-xs text-plum-500">{metric.units} · estimate {metric.estimate.toPrecision(4)} · n={metric.sample_size}</p>
     </Section>
+  );
+}
+
+function WarningAudit({ state }) {
+  if (state.loading) return <p className="text-sm text-plum-500">Loading audit notes…</p>;
+  if (state.error) {
+    return (
+      <div className="flex gap-3 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+        <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+        Could not load results/warnings.json: {String(state.error)}
+      </div>
+    );
+  }
+
+  const entries = Array.isArray(state.data) ? state.data : [];
+  if (entries.length === 0) {
+    return (
+      <div className="flex gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+        <ShieldCheck size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+        No warnings recorded in results/warnings.json.
+      </div>
+    );
+  }
+
+  const claimed = new Set();
+  const groups = warningCategories.map((category) => {
+    const items = entries.filter((warning, index) => {
+      if (claimed.has(index) || !category.test(warning)) return false;
+      claimed.add(index);
+      return true;
+    });
+    return { ...category, items };
+  }).filter((group) => group.items.length > 0);
+  const unclassified = entries.filter((_, index) => !claimed.has(index));
+  if (unclassified.length > 0) {
+    groups.push({
+      key: 'unclassified',
+      title: 'Unclassified audit note',
+      description: 'A record without a recognised presentation category; inspect the raw entry below.',
+      tone: 'failure',
+      items: unclassified,
+    });
+  }
+
+  return (
+    <div>
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-4">
+        <Info size={18} className="mt-0.5 shrink-0 text-fuchsia-700" aria-hidden="true" />
+        <p className="text-sm leading-6 text-plum-800">
+          <strong>{entries.length} transparent audit notes</strong> explain why a flagged-cohort comparison
+          is unavailable. This is the released null result, not a pipeline failure.
+        </p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {groups.map((group) => (
+          <div key={group.key} className={`warning-card warning-${group.tone}`}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-display text-lg leading-tight text-plum-950">{group.title}</p>
+              <span className="warning-count">{group.items.length}</span>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-plum-600">{group.description}</p>
+          </div>
+        ))}
+      </div>
+      <details className="raw-warning-list mt-4 overflow-hidden rounded-xl border border-plum-200 bg-white">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-sm font-semibold text-fuchsia-800">
+          <span>Show all {entries.length} raw entries</span>
+          <ChevronDown size={17} className="details-chevron" aria-hidden="true" />
+        </summary>
+        <ol className="space-y-3 border-t border-plum-100 p-5 pl-10 text-xs leading-5 text-plum-600">
+          {entries.map((warning, index) => <li key={`${index}-${warning}`} className="pl-1 marker:text-fuchsia-500">{warning}</li>)}
+        </ol>
+      </details>
+    </div>
+  );
+}
+
+function LazySpectralHero() {
+  const [ref, visible] = useNearViewport();
+  return (
+    <div ref={ref} className="spectral-hero-frame h-[22rem] overflow-hidden sm:h-[26rem] lg:h-full lg:min-h-[33rem]">
+      {visible ? (
+        <Suspense fallback={<div className="hero-loading grid h-full place-items-center text-xs uppercase tracking-[0.2em] text-fuchsia-200">Loading spectral instrument…</div>}>
+          <SpectralHero />
+        </Suspense>
+      ) : (
+        <div className="hero-loading h-full" aria-label="Spectral illustration placeholder" />
+      )}
+    </div>
+  );
+}
+
+function CohortStatement({ metrics }) {
+  const byName = Object.fromEntries(metrics.map((metric) => [metric.name, metric]));
+  const clean = byName.n_clean?.estimate;
+  const flagged = byName.n_flagged?.estimate;
+  if (!Number.isFinite(clean) || !Number.isFinite(flagged)) return null;
+  return (
+    <div className="cohort-statement">
+      <div>
+        <p className="spectral-kicker text-fuchsia-200">Observed cohort state</p>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-plum-100">
+          Released quality flags are constant in this selected tile. The dashboard preserves the null
+          comparison instead of manufacturing a flagged subgroup.
+        </p>
+      </div>
+      <div className="flex gap-7 sm:gap-12">
+        <div><p className="font-display text-4xl text-white">{clean.toLocaleString()}</p><p className="mt-1 text-xs uppercase tracking-widest text-fuchsia-200">clean</p></div>
+        <div><p className="font-display text-4xl text-white">{flagged.toLocaleString()}</p><p className="mt-1 text-xs uppercase tracking-widest text-fuchsia-200">flagged</p></div>
+      </div>
+    </div>
   );
 }
 
@@ -133,147 +337,151 @@ export default function App() {
   const benchmarks = useJson('./results/benchmarks.json');
 
   if (project.loading) {
-    return <main className="min-h-screen grid place-items-center">Loading local project metadata…</main>;
+    return <main className="spectral-page grid min-h-screen place-items-center text-xs uppercase tracking-[0.2em] text-fuchsia-800">Loading spectral audit…</main>;
   }
   if (project.error || !project.data) {
-    return (
-      <main className="min-h-screen grid place-items-center text-amber-300">
-        Could not load project.json: {String(project.error)}
-      </main>
-    );
+    return <main className="spectral-page grid min-h-screen place-items-center text-red-800">Could not load project.json: {String(project.error)}</main>;
   }
+
   const p = project.data;
+  const metrics = summary.data?.metrics ?? [];
   const isDemo = summary.data?.data_kind === 'synthetic_smoke_test' || summary.data?.data_kind === 'synthetic_demo';
 
   return (
-    <main className="grid-bg min-h-screen">
-      <div className="mx-auto max-w-7xl px-5 py-10">
-        <header className="mb-8 rounded-3xl border border-slate-800 bg-slate-950/80 p-7 backdrop-blur">
-          <p className="mb-3 text-sm uppercase tracking-[0.28em] text-cyan-300">{p.category}</p>
-          <h1 className="max-w-5xl text-3xl font-semibold leading-tight md:text-5xl">{p.title}</h1>
-          <p className="mt-5 max-w-4xl text-lg text-slate-300">{p.question}</p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <span className={`${pill} border-cyan-800 bg-cyan-950/50`}>{p.status}</span>
-            <span className={pill}>Priority {p.priority}/10</span>
-            <span className={pill}>{p.dataMode}</span>
-            {summary.data && (
-              <span className={`${pill} ${isDemo ? 'border-amber-800 bg-amber-950/40 text-amber-200' : 'border-emerald-800 bg-emerald-950/40 text-emerald-200'}`}>
-                {isDemo ? 'SYNTHETIC DEMO RESULTS' : 'REAL DATA RESULTS'}
-              </span>
-            )}
+    <main className="spectral-page min-h-screen">
+      <header className="spectral-header">
+        <div className="mx-auto max-w-[92rem] px-4 py-4 sm:px-6 lg:px-8">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-fuchsia-300/20 pb-4 text-xs">
+            <div className="flex items-center gap-3 text-fuchsia-100"><Aperture size={17} aria-hidden="true" /><span className="uppercase tracking-[0.2em]">Euclid Q1 · NISP spectroscopy</span></div>
+            <div className="flex gap-2">
+              <span className="hero-pill">{p.status}</span>
+              <span className="hero-pill">Priority {p.priority}/10</span>
+            </div>
           </div>
-        </header>
+          <div className="grid gap-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch">
+            <div className="flex min-h-[30rem] flex-col justify-between py-8 lg:py-14 lg:pr-8">
+              <div>
+                <p className="spectral-kicker text-fuchsia-300">{p.category}</p>
+                <h1 className="font-display mt-5 max-w-4xl text-5xl leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl xl:text-7xl">{p.title}</h1>
+                <p className="mt-7 max-w-3xl text-lg leading-8 text-plum-100">{p.question}</p>
+              </div>
+              <div className="mt-10 flex flex-wrap items-center gap-3 text-xs">
+                <span className="rounded-full border border-fuchsia-300/25 bg-fuchsia-950/45 px-4 py-2 text-fuchsia-100">{p.dataMode}</span>
+                {summary.data && (
+                  <span className={`rounded-full border px-4 py-2 ${isDemo ? 'border-amber-300/40 bg-amber-900/30 text-amber-100' : 'border-emerald-300/35 bg-emerald-900/25 text-emerald-100'}`}>
+                    {isDemo ? 'Synthetic demo results' : 'Real data results'}
+                  </span>
+                )}
+              </div>
+            </div>
+            <LazySpectralHero />
+          </div>
+        </div>
+      </header>
 
+      <div className="mx-auto max-w-[92rem] px-4 pb-14 sm:px-6 lg:px-8">
         {isDemo && (
-          <div className="mb-6 flex items-start gap-2 rounded-xl border border-amber-900 bg-amber-950/30 p-4 text-sm text-amber-200">
-            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-            The metrics and figures below were generated from clearly-labelled synthetic demo data
-            (scripts/run_analysis.py --demo), not real Euclid Q1 NISP observations. Real-data results
-            appear here automatically once scripts/fetch_data.py and scripts/run_analysis.py have been
-            run against downloaded NISP spectroscopy products.
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+            These metrics and figures use clearly labelled synthetic demo data, not Euclid observations.
           </div>
         )}
 
-        <section className="grid gap-4 md:grid-cols-3">
-          {summary.data?.metrics?.slice(0, 6).map((m) => <MetricCard key={m.name} metric={m} />)}
-          {!summary.data && (
-            <article className={card}>
-              <p className="text-sm text-slate-400">Result status</p>
-              <p className="mt-2 text-2xl font-semibold">NO RESULTS YET</p>
-              <p className="mt-1 text-xs text-slate-500">Run scripts/run_analysis.py first.</p>
-            </article>
-          )}
+        <CohortStatement metrics={metrics} />
+
+        <section className="mt-14" aria-labelledby="metric-heading">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div><p className="spectral-kicker">Spectral index</p><h2 id="metric-heading" className="font-display mt-1 text-4xl text-plum-950">Recorded measurements</h2></div>
+            <p className="hidden max-w-md text-right text-sm leading-6 text-plum-500 md:block">Every reported metric is displayed, including unavailable comparisons from the documented null split.</p>
+          </div>
+          <div className="metric-grid grid gap-px overflow-hidden rounded-2xl border border-plum-200 bg-plum-200 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {metrics.map((metric, index) => <MetricCard key={metric.name} metric={metric} index={index} />)}
+            {!summary.data && <div className="metric-tile"><p className="font-display text-2xl">No results yet</p><p className="mt-2 text-sm text-plum-500">Run scripts/run_analysis.py first.</p></div>}
+          </div>
         </section>
 
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <ConfidenceExplorer metrics={summary.data?.metrics} />
-        </section>
-
-        <section className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-          <Section icon={BookOpen} title="Figure gallery">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {p.figures.map((f) => (
-                <figure key={f.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+        <section className="mt-14" aria-labelledby="evidence-heading">
+          <div className="mb-6"><p className="spectral-kicker">Evidence atlas</p><h2 id="evidence-heading" className="font-display mt-1 text-4xl text-plum-950">Figure gallery</h2></div>
+          <div className="evidence-grid">
+            {p.figures.map((figure, index) => (
+              <figure key={figure.id} className={`evidence-card evidence-card-${index + 1}`}>
+                <div className="evidence-image">
                   <img
-                    src={`./figures/${f.id}.svg`}
-                    alt={f.label}
-                    className="w-full rounded-lg bg-white"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    src={`./figures/${figure.id}.svg`}
+                    alt={figure.label}
+                    className="h-full w-full object-contain"
+                    loading={index > 1 ? 'lazy' : 'eager'}
+                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
                   />
-                  <figcaption className="mt-2 text-sm text-slate-300">{f.label}</figcaption>
-                </figure>
-              ))}
-            </div>
+                </div>
+                <figcaption className="flex items-center justify-between gap-3 px-5 py-4">
+                  <span className="font-display text-lg text-plum-950">{figure.label}</span>
+                  <span className="font-mono text-[0.65rem] text-fuchsia-700">PLATE {String(index + 1).padStart(2, '0')}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <Section icon={AlertTriangle} kicker="Live result log" title="Warnings and documented limitations">
+            <WarningAudit state={warnings} />
           </Section>
-          <Section icon={ShieldCheck} title="Provenance boundary">
-            <p className="text-slate-300">{p.novelty}</p>
-            <div className="mt-5 flex items-start gap-2 rounded-xl border border-amber-900 bg-amber-950/30 p-4 text-sm text-amber-200">
-              <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-              No result is public-ready until validation and provenance checks pass.
-            </div>
+        </section>
+
+        <section className="mt-8 grid gap-8 lg:grid-cols-3">
+          <Section icon={ShieldCheck} kicker="Scope control" title="Provenance boundary">
+            <p className="text-sm leading-6 text-plum-700">{p.novelty}</p>
+            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">No result is public-ready until validation and provenance checks pass.</div>
             {summary.data?.provenance && (
-              <dl className="mt-4 space-y-1 text-sm text-slate-300">
-                <div className="flex items-center gap-2"><GitCommit size={14} /><dt className="text-slate-500">git commit</dt><dd className="ml-auto font-mono">{summary.data.provenance.git_commit}</dd></div>
-                <div className="flex items-center gap-2"><FileText size={14} /><dt className="text-slate-500">config sha256</dt><dd className="ml-auto font-mono truncate max-w-[10rem]">{summary.data.provenance.config_sha256 ?? 'n/a'}</dd></div>
-                <div className="flex items-center gap-2"><Beaker size={14} /><dt className="text-slate-500">package version</dt><dd className="ml-auto font-mono">{summary.data.provenance.package_version}</dd></div>
+              <dl className="mt-5 space-y-3 text-xs">
+                <div className="flex items-center gap-2"><GitCommit size={14} className="text-fuchsia-700" /><dt className="text-plum-500">git commit</dt><dd className="ml-auto font-mono text-plum-800">{summary.data.provenance.git_commit}</dd></div>
+                <div className="flex items-center gap-2"><FileText size={14} className="text-fuchsia-700" /><dt className="text-plum-500">config sha256</dt><dd className="ml-auto max-w-[9rem] truncate font-mono text-plum-800">{summary.data.provenance.config_sha256 ?? 'n/a'}</dd></div>
+                <div className="flex items-center gap-2"><Beaker size={14} className="text-fuchsia-700" /><dt className="text-plum-500">package version</dt><dd className="ml-auto font-mono text-plum-800">{summary.data.provenance.package_version}</dd></div>
               </dl>
             )}
           </Section>
+          <Section icon={ListChecks} kicker="Acceptance gates" title="Validation contract">
+            <ol className="space-y-3 text-sm text-plum-700">
+              {p.validationContract.map((item, index) => (
+                <li key={item} className="flex gap-3 border-b border-plum-100 pb-3 last:border-0 last:pb-0"><span className="font-mono text-fuchsia-700">{String(index + 1).padStart(2, '0')}</span><span>{item}</span></li>
+              ))}
+            </ol>
+          </Section>
+          <ConfidenceExplorer metrics={metrics} />
         </section>
 
-        <section className="mt-6 grid gap-6 md:grid-cols-2">
-          <Section icon={ListChecks} title="Validation contract">
-            <ul className="space-y-2 text-slate-300">
-              {p.validationContract.map((v) => <li key={v}>• {v}</li>)}
+        <section className="method-band mt-14 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <Section icon={Sparkles} kicker="Analysis chain" title="Methodology" dark>
+            <p className="text-sm leading-7 text-plum-100">{p.methodology}</p>
+          </Section>
+          <Section icon={BookOpen} kicker="Interpretive boundary" title="Assumptions and limitations" dark>
+            <p className="spectral-kicker text-fuchsia-300">Assumptions</p>
+            <ul className="mt-3 space-y-3 text-sm leading-6 text-plum-100">
+              {p.assumptions.map((assumption) => <li key={assumption} className="border-l border-fuchsia-400/50 pl-3">{assumption}</li>)}
             </ul>
-          </Section>
-          <Section icon={AlertTriangle} title="Warnings">
-            {warnings.data && warnings.data.length > 0 ? (
-              <ul className="space-y-2 text-sm text-amber-200">
-                {warnings.data.map((w, i) => <li key={i}>• {w}</li>)}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-400">No warnings recorded in results/warnings.json.</p>
-            )}
-          </Section>
-        </section>
-
-        <section className="mt-6 grid gap-6 lg:grid-cols-2">
-          <Section icon={Beaker} title="Methodology">
-            <p className="text-sm leading-relaxed text-slate-300">{p.methodology}</p>
-          </Section>
-          <Section icon={AlertTriangle} title="Assumptions and limitations">
-            <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">Assumptions</p>
-            <ul className="mb-4 space-y-1 text-sm text-slate-300">
-              {p.assumptions.map((a) => <li key={a}>• {a}</li>)}
-            </ul>
-            <p className="mb-2 text-xs uppercase tracking-wide text-slate-500">Limitations</p>
-            <ul className="space-y-1 text-sm text-slate-300">
-              {p.limitations.map((l) => <li key={l}>• {l}</li>)}
+            <p className="spectral-kicker mt-7 text-amber-300">Limitations</p>
+            <ul className="mt-3 space-y-3 text-sm leading-6 text-plum-100">
+              {p.limitations.map((limitation) => <li key={limitation} className="border-l border-amber-400/50 pl-3">{limitation}</li>)}
             </ul>
           </Section>
         </section>
 
-        <section className="mt-6 grid gap-6 md:grid-cols-2">
-          <Section icon={Download} title="Downloads and provenance manifest">
-            <div className="flex flex-wrap gap-3 text-sm">
-              <a className="rounded-lg border border-slate-700 px-3 py-2 hover:border-cyan-600" href="./manifest.csv" download>data/manifest.csv</a>
-              <a className="rounded-lg border border-slate-700 px-3 py-2 hover:border-cyan-600" href="./results/summary.json" download>results/summary.json</a>
-              {benchmarks.data && (
-                <a className="rounded-lg border border-slate-700 px-3 py-2 hover:border-cyan-600" href="./results/benchmarks.json" download>results/benchmarks.json</a>
-              )}
+        <footer className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <Section icon={Download} kicker="Reproducibility" title="Downloads and provenance manifest">
+            <div className="flex flex-wrap gap-2 text-sm">
+              <a className="download-link" href="./manifest.csv" download>data/manifest.csv</a>
+              <a className="download-link" href="./results/summary.json" download>results/summary.json</a>
+              {benchmarks.data && <a className="download-link" href="./results/benchmarks.json" download>results/benchmarks.json</a>}
             </div>
-            <p className="mt-4 text-xs text-slate-500">
-              data/manifest.csv records product_id, source, source_url, retrieved_utc, sha256, file_size_bytes,
-              selection_reason and licence_or_terms for every real archive product used.
-            </p>
+            <p className="mt-5 text-xs leading-5 text-plum-500">The manifest records product identifiers, archive source, retrieval time, checksums, file sizes, selection reasons and usage terms.</p>
           </Section>
-          <Section icon={Database} title="Citation and licence">
-            <p className="text-sm text-slate-300">Author: {p.citation.author}</p>
-            <p className="text-sm text-slate-300">Licence: {p.citation.license}</p>
-            <a className="mt-2 inline-block text-sm text-cyan-300 hover:underline" href={p.citation.repository}>{p.citation.repository}</a>
+          <Section icon={Database} kicker="Credit" title="Citation and licence">
+            <p className="text-sm text-plum-700">Author: {p.citation.author}</p>
+            <p className="mt-2 text-sm text-plum-700">Licence: {p.citation.license}</p>
+            <a className="mt-4 inline-block text-sm text-fuchsia-800 underline-offset-4 hover:underline" href={p.citation.repository}>{p.citation.repository}</a>
           </Section>
-        </section>
+        </footer>
       </div>
     </main>
   );

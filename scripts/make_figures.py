@@ -18,6 +18,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import scienceplots  # noqa: F401 - importing registers the bundled matplotlib styles
 
 from euclid_nisp_contamination_audit import __version__
 from euclid_nisp_contamination_audit.config import load_config
@@ -27,6 +28,8 @@ from euclid_nisp_contamination_audit.masks import CONTAMINATION_GROUP_CLEAN, CON
 from euclid_nisp_contamination_audit.plotting import CONTAMINATION_GROUP_COLORS, save_figure_with_sidecar
 from euclid_nisp_contamination_audit.provenance import get_git_commit, sha256_config
 from euclid_nisp_contamination_audit.synthetic import build_synthetic_catalogue, build_synthetic_spectrum
+
+plt.style.use(["science", "no-latex"])
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -149,7 +152,7 @@ def make_demo_figures(out_dir: Path, config_path: Path) -> None:
     _plot_spectra(ax, flagged_spec.wavelength_angstrom, flagged_spec.signal, flagged_spec.mask, flagged_spec.quality, "flagged", CONTAMINATION_GROUP_COLORS["flagged"])
     ax.set_xlabel("Observed wavelength (Angstrom)")
     ax.set_ylabel("Signal (1e-16 erg/s/cm^2/Angstrom)")
-    ax.set_title("Example low/high-contamination spectra — SYNTHETIC DEMO")
+    ax.set_title("Example low/high-contamination spectra - SYNTHETIC DEMO")
     ax.legend(fontsize=8)
     fig.tight_layout()
     _save(fig, out_dir, "low_high_contamination_spectra", data_kind=data_kind, sample_size=2, units="flux density vs Angstrom", config_path=config_path)

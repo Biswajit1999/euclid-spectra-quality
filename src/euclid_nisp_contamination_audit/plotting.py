@@ -6,6 +6,9 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scienceplots  # noqa: F401 - importing registers the bundled matplotlib styles
+
+plt.style.use(["science", "no-latex"])
 
 CONTAMINATION_GROUP_COLORS = {"clean": "#2a6f97", "flagged": "#c1440e"}
 
@@ -17,7 +20,7 @@ def plot_demo(values: np.ndarray, output: str | Path) -> Path:
     ax.plot(np.arange(values.size), values)
     ax.set_xlabel("Synthetic index")
     ax.set_ylabel("Synthetic value")
-    ax.set_title("Smoke-test output — not a scientific result")
+    ax.set_title("Smoke-test output - not a scientific result")
     fig.tight_layout()
     fig.savefig(path, dpi=200)
     plt.close(fig)
