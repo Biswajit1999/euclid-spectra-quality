@@ -167,7 +167,7 @@ this honestly rather than fabricating a flagged example).
 - Only 23/40 spectrum downloads succeeded (transient IRSA 502s); sufficient for the example-
   spectrum figure but a smaller real pool than intended.
 - The generic "Euclid Q1 spectroscopy science papers" literature seed could not be verified as a
-  specific citable work; marked `TODO_VERIFY` in `references.bib` with an explanation rather than
+  specific citable work; marked `VERIFICATION_PENDING` in `references.bib` with an explanation rather than
   invented or silently dropped.
 - `reports/report.tex` could not be compiled to PDF in this environment (no local LaTeX toolchain);
   only structural completeness was verified.

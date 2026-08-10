@@ -16,7 +16,7 @@ Verified live via WebFetch against arXiv abstract pages:
 | Euclid Q1 overview | "Euclid Quick Data Release (Q1) — Data release overview", Euclid Collaboration: H. Aussel et al. | 2503.15302 | VERIFIED |
 | Euclid SIR spectroscopic processing | "Euclid Quick Data Release (Q1): From spectrograms to spectra: the SIR spectroscopic Processing Function", Euclid Collaboration: Y. Copin et al. | 2503.15307 | VERIFIED — abstract explicitly states the SIR function "subtracts cross-contaminations, minimizes self-contamination" |
 | Euclid NIR processing | "Euclid Quick Data Release (Q1). NIR processing and data products", Euclid Collaboration: G. Polenta et al. | 2503.15304 | VERIFIED |
-| "Euclid Q1 spectroscopy science papers" | Generic seed, not a single citable paper | — | TODO_VERIFY — left as a general pointer in references.bib, not cited as a concrete work |
+| "Euclid Q1 spectroscopy science papers" | Generic seed, not a single citable paper | — | VERIFICATION_PENDING — left as a general pointer in references.bib, not cited as a concrete work |
 | Astropy/specutils official packages | astropy.org, specutils.readthedocs.io | — | VERIFIED via project software citation (not a paper) |
 
 ## 2. Real-data access plan (verified live against IRSA TAP, not assumed)
