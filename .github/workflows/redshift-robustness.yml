@@ -1,0 +1,27 @@
+name: Redshift robustness research
+on:
+  push:
+    paths:
+      - 'research/redshift_robustness.py'
+      - 'research/run_redshift_robustness.py'
+      - 'tests/test_redshift_robustness.py'
+      - '.github/workflows/redshift-robustness.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  synthetic-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e ".[dev]"
+      - run: pytest -q tests/test_redshift_robustness.py
+      - run: python research/run_redshift_robustness.py --output-dir results/redshift_robustness
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-redshift-robustness
+          path: results/redshift_robustness/
