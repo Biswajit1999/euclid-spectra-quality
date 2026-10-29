@@ -36,7 +36,9 @@ def test_gaussian_pull_coverage_and_outlier_degradation():
 
 
 def test_exact_coverage_boundary_and_validation():
-    z = np.array([1., 1.1, 1.2, 1.3]); t = np.ones(4); s = np.full(4, .1)
+    z = np.array([1., 1.1, 1.2, 1.3])
+    t = np.ones(4)
+    s = np.full(4, .1)
     result = redshift_coverage(z, t, s, np.array(["x"] * 4))
     assert result["x"]["coverage_1sigma"] == pytest.approx(.5)
     with pytest.raises(ValueError):
@@ -44,7 +46,9 @@ def test_exact_coverage_boundary_and_validation():
 
 
 def test_reliability_calibration_perfect_probabilities():
-    t = np.ones(40); z = t.copy(); z[20:] = 2.
+    t = np.ones(40)
+    z = t.copy()
+    z[20:] = 2.
     score = np.r_[np.ones(20), np.zeros(20)]
     result = reliability_calibration(z, t, score)
     assert result["brier_score"] == pytest.approx(0.)
