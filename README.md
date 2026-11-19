@@ -4,6 +4,12 @@
 
 > **Curation:** `BUILD_FIRST` · Priority 9.4/10 · real public Euclid Q1 NISP products
 
+## Research evidence and downloads
+
+[Open the evidence browser file](evidence.html) for 15 selected files, including [`line_recovery.json`](figures/line_recovery.json). Each file has a download link and SHA-256 digest. Serve this checkout with `python -m http.server` to view the static browser.
+
+Rebuild the inventory and browser with `python scripts/evidence_catalog.py` and `python scripts/render_evidence_page.py`.
+
 ## Scientific question
 
 How do released contamination indicators relate to continuum S/N, emission-line recovery and redshift reliability in selected NISP spectra?
