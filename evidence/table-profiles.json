@@ -1,0 +1,259 @@
+{
+  "schema": 1,
+  "project": "Euclid NISP Spectral-Contamination Reliability Audit",
+  "tables": [
+    {
+      "path": "data/source_catalog.csv",
+      "label": "Source catalog",
+      "role": "Data and provenance",
+      "rows": 6000,
+      "width_mismatches": 0,
+      "columns": [
+        {
+          "name": "object_id",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 2.7187332516739814e+18,
+          "maximum": 2.7240726146746255e+18
+        },
+        {
+          "name": "ra",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 271.8733251237168,
+          "maximum": 272.4072614758072
+        },
+        {
+          "name": "dec",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 67.24988031914768,
+          "maximum": 67.75336274204322
+        },
+        {
+          "name": "tileid",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 102160061.0,
+          "maximum": 102160061.0
+        },
+        {
+          "name": "spe_context_error_flag",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        {
+          "name": "spe_context_warning_flag",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 32768.0,
+          "maximum": 32768.0
+        },
+        {
+          "name": "spe_error_flag",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 0.0,
+          "maximum": 0.0
+        },
+        {
+          "name": "spe_warning_flag",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 2.0,
+          "maximum": 2.0
+        },
+        {
+          "name": "spe_grism",
+          "blank": 0,
+          "text": 6000,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "spe_npix",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 2.0,
+          "maximum": 468.0
+        },
+        {
+          "name": "spe_z",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 0.010202020406723022,
+          "maximum": 4.993948459625244
+        },
+        {
+          "name": "spe_z_err",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 4.0412278394796886e-06,
+          "maximum": 0.04426129162311554
+        },
+        {
+          "name": "spe_z_rel",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": 0.009267522022128105,
+          "maximum": 0.9987425208091736
+        },
+        {
+          "name": "spe_cont_snr",
+          "blank": 0,
+          "text": 0,
+          "finite": 5655,
+          "nonfinite": 345,
+          "minimum": 0.0,
+          "maximum": 19295.234375
+        },
+        {
+          "name": "spe_subclass",
+          "blank": 0,
+          "text": 6000,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "best_line_snr",
+          "blank": 0,
+          "text": 0,
+          "finite": 6000,
+          "nonfinite": 0,
+          "minimum": -99.0,
+          "maximum": 302.0576171875
+        }
+      ]
+    },
+    {
+      "path": "data/manifest.csv",
+      "label": "Manifest",
+      "role": "Data and provenance",
+      "rows": 44,
+      "width_mismatches": 0,
+      "columns": [
+        {
+          "name": "product_id",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "source",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "source_url",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "retrieved_utc",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "sha256",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "file_size_bytes",
+          "blank": 0,
+          "text": 0,
+          "finite": 44,
+          "nonfinite": 0,
+          "minimum": 102129.0,
+          "maximum": 1116512.0
+        },
+        {
+          "name": "selection_reason",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "licence_or_terms",
+          "blank": 0,
+          "text": 44,
+          "finite": 0,
+          "nonfinite": 0
+        }
+      ]
+    },
+    {
+      "path": "data/example/demo.csv",
+      "label": "Demo",
+      "role": "Data and provenance",
+      "rows": 5,
+      "width_mismatches": 0,
+      "columns": [
+        {
+          "name": "x",
+          "blank": 0,
+          "text": 0,
+          "finite": 5,
+          "nonfinite": 0,
+          "minimum": 0.0,
+          "maximum": 4.0
+        },
+        {
+          "name": "value",
+          "blank": 0,
+          "text": 0,
+          "finite": 5,
+          "nonfinite": 0,
+          "minimum": 0.1,
+          "maximum": 0.24
+        },
+        {
+          "name": "uncertainty",
+          "blank": 0,
+          "text": 0,
+          "finite": 5,
+          "nonfinite": 0,
+          "minimum": 0.02,
+          "maximum": 0.04
+        }
+      ]
+    }
+  ],
+  "excluded": []
+}
