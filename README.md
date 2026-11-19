@@ -6,6 +6,13 @@
 
 ## Research evidence and downloads
 
+
+- [Download the machine-readable table profiles](evidence/table-profiles.json) for 3 archived tables. Open `table-evidence.html` from the checkout for the coverage chart.
+- Start with [Line recovery](figures/line_recovery.json), [Field map](figures/field_map.json), [Low high contamination spectra](figures/low_high_contamination_spectra.json).
+- [View Line recovery](figures/line_recovery.png).
+
+To rebuild the table profiles after rebuilding the evidence inventory, run `python scripts/profile_evidence_tables.py` followed by `python scripts/render_table_profiles.py`.
+
 [Open the evidence browser file](evidence.html) for 15 selected files, including [`line_recovery.json`](figures/line_recovery.json). Each file has a download link and SHA-256 digest. Serve this checkout with `python -m http.server` to view the static browser.
 
 Rebuild the inventory and browser with `python scripts/evidence_catalog.py` and `python scripts/render_evidence_page.py`.
