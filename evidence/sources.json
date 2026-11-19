@@ -1,0 +1,81 @@
+{
+  "project": "Euclid NISP Spectral-Contamination Reliability Audit",
+  "repository": "https://github.com/Biswajit1999/euclid-spectra-quality",
+  "files": [
+    {
+      "label": "Provenance",
+      "path": "data/provenance.yml",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Source catalog",
+      "path": "data/source_catalog.csv",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Manifest",
+      "path": "data/manifest.csv",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Research reference",
+      "path": "data/research-reference.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Demo",
+      "path": "data/example/demo.csv",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Line recovery",
+      "path": "figures/line_recovery.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Field map",
+      "path": "figures/field_map.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Low high contamination spectra",
+      "path": "figures/low_high_contamination_spectra.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Outlier fraction",
+      "path": "figures/outlier_fraction.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Redshift error",
+      "path": "figures/redshift_error.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Snr vs contamination",
+      "path": "figures/snr_vs_contamination.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Line recovery",
+      "path": "figures/line_recovery.png",
+      "role": "Figures"
+    },
+    {
+      "label": "Field map",
+      "path": "figures/field_map.png",
+      "role": "Figures"
+    },
+    {
+      "label": "Low high contamination spectra",
+      "path": "figures/low_high_contamination_spectra.png",
+      "role": "Figures"
+    },
+    {
+      "label": "Outlier fraction",
+      "path": "figures/outlier_fraction.png",
+      "role": "Figures"
+    }
+  ]
+}
